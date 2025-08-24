@@ -3,7 +3,7 @@ import { Play, Pause, Volume2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Recording } from "@/data/recordings";
+import type { Recording } from "@/data/recording";
 
 interface VideoPlayerProps {
   currentVideo: Recording | null;
@@ -28,7 +28,9 @@ export function VideoPlayer({ currentVideo, isPlaying, onPlayPause }: VideoPlaye
     if (videoRef.current && currentVideo) {
       // In a real app, this would load the actual video file
       // For demo purposes, we'll use a placeholder
-      videoRef.current.src = "";
+      console.log('this is the current video',currentVideo);
+      
+      videoRef.current.src = currentVideo.path;
     }
   }, [currentVideo]);
 

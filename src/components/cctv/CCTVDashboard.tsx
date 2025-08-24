@@ -6,9 +6,9 @@ import { VideoPlayer } from "./VideoPlayer";
 import { VideoFilters } from "./VideoFilters";
 import { VideoList } from "./VideoList";
 import { Timeline as TimelineView } from "./Timeline";
-import { RECORDINGS } from "@/data/recordings";
+import { RECORDINGS } from "@/data/recording";
 import { isInTimeRange } from "@/lib/formatters";
-import type { Recording, CameraRecordings } from "@/data/recordings";
+import type { Recording, CameraRecordings } from "@/data/recording";
 
 export function CCTVDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => {

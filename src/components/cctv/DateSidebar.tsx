@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/formatters";
-import type { RecordingsData } from "@/data/recordings";
+import type { RecordingsData } from "@/data/recording";
 
 interface DateSidebarProps {
   recordings: RecordingsData;

@@ -1,9 +1,9 @@
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatTime, formatDuration } from "@/lib/formatters";
-import type { Recording, CameraRecordings } from "@/data/recordings";
+import type { Recording, CameraRecordings } from "@/data/recording";
 
 interface TimelineProps {
   cameras: CameraRecordings;
@@ -15,41 +15,49 @@ interface TimelineProps {
 interface TimelineSegment {
   video: Recording;
   camera: string;
-  startMinutes: number;
-  durationMinutes: number;
+  startSeconds: number;
+  durationSeconds: number;
 }
 
 export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }: TimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [currentTime, setCurrentTime] = useState(new Date().getHours() * 60 + new Date().getMinutes());
+  const [currentTime, setCurrentTime] = useState(
+    new Date().getHours() * 3600 + new Date().getMinutes() * 60 + new Date().getSeconds()
+  );
 
   // Calculate timeline segments
   const timelineData = useMemo(() => {
     const segments: TimelineSegment[] = [];
-    let minTime = 24 * 60; // 1440 minutes
+    let minTime = 24 * 3600; // 86400 seconds
     let maxTime = 0;
 
     Object.entries(cameras).forEach(([camera, videos]) => {
+
       videos.forEach(video => {
         const startDate = new Date(video.createdAt);
-        const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
-        const durationMinutes = video.duration / 60;
+        const startSeconds =
+          startDate.getHours() * 3600 +
+          startDate.getMinutes() * 60 +
+          startDate.getSeconds();
+        const durationSeconds = video.duration; // already in seconds
 
         segments.push({
           video,
           camera,
-          startMinutes,
-          durationMinutes
+          startSeconds,
+          durationSeconds,
         });
 
-        minTime = Math.min(minTime, startMinutes);
-        maxTime = Math.max(maxTime, startMinutes + durationMinutes);
+        minTime = Math.min(minTime, startSeconds);
+        maxTime = Math.max(maxTime, startSeconds + durationSeconds);
       });
+
+      
     });
 
-    // Expand range for better visibility
-    const startTime = Math.max(0, Math.floor(minTime / 60) * 60 - 60);
-    const endTime = Math.min(24 * 60, Math.ceil(maxTime / 60) * 60 + 60);
+    // Expand range for better visibility (±5 min = 300 sec)
+    const startTime = Math.max(0, Math.floor(minTime / 60) * 60 - 300);
+    const endTime = Math.min(24 * 3600, Math.ceil(maxTime / 60) * 60 + 300);
 
     return { segments, startTime, endTime };
   }, [cameras]);
@@ -60,8 +68,8 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
 
   // Generate hour markers
   const hourMarkers = useMemo(() => {
-    const markers = [];
-    for (let hour = Math.floor(startTime / 60); hour <= Math.ceil(endTime / 60); hour++) {
+    const markers: number[] = [];
+    for (let hour = Math.floor(startTime / 3600); hour <= Math.ceil(endTime / 3600); hour++) {
       if (hour >= 0 && hour <= 24) {
         markers.push(hour);
       }
@@ -70,9 +78,9 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
   }, [startTime, endTime]);
 
   const getSegmentStyle = (segment: TimelineSegment) => {
-    const left = ((segment.startMinutes - startTime) / timeRange) * 100;
-    const width = (segment.durationMinutes / timeRange) * 100;
-    
+    const left = ((segment.startSeconds - startTime) / timeRange) * 100;
+    const width = (segment.durationSeconds / timeRange) * 100;
+
     return {
       left: `${left}%`,
       width: `${Math.max(width, 0.5)}%`, // Minimum width for visibility
@@ -95,7 +103,7 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
         </div>
       </Card>
     );
-  };
+  }
 
   return (
     <Card className="bg-gradient-surface shadow-monitoring">
@@ -108,8 +116,25 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
             </p>
           </div>
           <Badge variant="outline" className="font-mono">
-            {formatTime(new Date(`${selectedDate}T${Math.floor(startTime / 60).toString().padStart(2, '0')}:${(startTime % 60).toString().padStart(2, '0')}:00`).toISOString())} - 
-            {formatTime(new Date(`${selectedDate}T${Math.floor(endTime / 60).toString().padStart(2, '0')}:${(endTime % 60).toString().padStart(2, '0')}:00`).toISOString())}
+            {formatTime(
+              new Date(
+                `${selectedDate}T${Math.floor(startTime / 3600)
+                  .toString()
+                  .padStart(2, "0")}:${Math.floor((startTime % 3600) / 60)
+                  .toString()
+                  .padStart(2, "0")}:00`
+              ).toISOString()
+            )}{" "}
+            -{" "}
+            {formatTime(
+              new Date(
+                `${selectedDate}T${Math.floor(endTime / 3600)
+                  .toString()
+                  .padStart(2, "0")}:${Math.floor((endTime % 3600) / 60)
+                  .toString()
+                  .padStart(2, "0")}:00`
+              ).toISOString()
+            )}
           </Badge>
         </div>
 
@@ -119,7 +144,7 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
             <div className="sticky top-0 z-10 bg-card border-b border-border mb-4">
               <div className="relative h-12 px-4">
                 {hourMarkers.map(hour => {
-                  const position = ((hour * 60 - startTime) / timeRange) * 100;
+                  const position = ((hour * 3600 - startTime) / timeRange) * 100;
                   return (
                     <div
                       key={hour}
@@ -127,7 +152,7 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
                       style={{ left: `${position}%` }}
                     >
                       <div className="font-mono font-semibold">
-                        {hour.toString().padStart(2, '0')}:00
+                        {hour.toString().padStart(2, "0")}:00
                       </div>
                       <div className="w-px h-6 bg-border" />
                     </div>
@@ -140,14 +165,14 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
             <div className="space-y-3 px-4">
               {cameraNames.map(camera => {
                 const cameraSegments = segments.filter(s => s.camera === camera);
-                
+
                 return (
                   <div key={camera} className="relative">
                     {/* Camera label */}
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <span className="text-xs font-mono text-primary font-semibold">
-                          {camera.replace('camera', 'C')}
+                          {camera.replace("camera", "C")}
                         </span>
                       </div>
                       <div className="font-mono text-sm font-semibold text-foreground">
@@ -162,7 +187,7 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
                     <div className="relative h-8 bg-accent/20 rounded-md mb-1">
                       {/* Grid lines */}
                       {hourMarkers.map(hour => {
-                        const position = ((hour * 60 - startTime) / timeRange) * 100;
+                        const position = ((hour * 3600 - startTime) / timeRange) * 100;
                         return (
                           <div
                             key={hour}
@@ -187,7 +212,8 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
                         >
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-xs font-mono bg-black/75 text-white px-1 py-0.5 rounded whitespace-nowrap">
-                              {formatTime(segment.video.createdAt)} ({formatDuration(segment.video.duration)})
+                              {formatTime(segment.video.createdAt)} (
+                              {formatDuration(segment.video.duration)})
                             </span>
                           </div>
                         </button>
@@ -199,12 +225,15 @@ export function Timeline({ cameras, onVideoSelect, selectedVideo, selectedDate }
             </div>
 
             {/* Current time indicator (if today) */}
-            {selectedDate === new Date().toISOString().split('T')[0] && (
+            {selectedDate === new Date().toISOString().split("T")[0] && (
               <div
                 className="absolute top-12 bottom-0 w-0.5 bg-accent z-20 pointer-events-none"
                 style={{
                   left: `${((currentTime - startTime) / timeRange) * 100}%`,
-                  display: currentTime >= startTime && currentTime <= endTime ? 'block' : 'none'
+                  display:
+                    currentTime >= startTime && currentTime <= endTime
+                      ? "block"
+                      : "none",
                 }}
               >
                 <div className="absolute -top-3 -left-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center">

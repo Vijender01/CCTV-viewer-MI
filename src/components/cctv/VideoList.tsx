@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDuration, formatSize, formatTime } from "@/lib/formatters";
-import type { Recording, CameraRecordings } from "@/data/recordings";
+import type { Recording, CameraRecordings } from "@/data/recording";
 
 interface VideoListProps {
   cameras: CameraRecordings;

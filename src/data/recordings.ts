@@ -19,15 +19,15 @@ export const RECORDINGS: RecordingsData = {
   "2025-08-21": {
     "camera1": [
       {
-        "name": "camera1_08-00-00.mp4",
-        "path": "D:/CCTV_Recordings/2025-08-21/camera1_08-00-00.mp4",
+        "name": "03M54S_1755408834.mp4",
+        "path": "public/02M53S_1755419573.mp4",
         "duration": 600,
         "size": 10485760,
         "createdAt": "2025-08-21T08:00:00"
       },
       {
-        "name": "camera1_08-10-00.mp4",
-        "path": "D:/CCTV_Recordings/2025-08-21/camera1_08-10-00.mp4",
+        "name": "M53S_1755419573.mp4",
+        "path": "public/02M53S_1755419573.mp4",
         "duration": 120,
         "size": 5242880,
         "createdAt": "2025-08-21T08:10:00"
@@ -36,7 +36,7 @@ export const RECORDINGS: RecordingsData = {
     "camera2": [
       {
         "name": "camera2_09-00-00.mp4",
-        "path": "D:/CCTV_Recordings/2025-08-21/camera2_09-00-00.mp4",
+        "path": "E:/cctv-log-viewer/public/02M53S_1755419573.mp4",
         "duration": 300,
         "size": 7340032,
         "createdAt": "2025-08-21T09:00:00"
